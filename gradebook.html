@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyward - Student Access Gradebook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+
+        /* Legacy Skyward Header Styling */
+        .skyward-logo-text {
+            color: #0b3c5d;
+            font-weight: bold;
+            font-size: 18px;
+            font-style: italic;
+            letter-spacing: -0.5px;
+        }
+        
+        .skyward-sublogo {
+            color: #0b3c5d;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+
+        .student-name-title {
+            color: #b91c1c;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+
+        /* Top Links */
+        .top-nav-link {
+            color: #3b82f6;
+            text-decoration: underline;
+            font-size: 11px;
+        }
+
+
+        .top-nav-link:hover {
+            color: #1d4ed8;
+        }
+
+
+        /* Sidebar Styling */
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 5px 12px;
+            font-size: 12px;
+            color: #334155;
+            border-bottom: 1px solid #cbd5e1;
+            text-decoration: none;
+            background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+
+        .sidebar-btn:hover {
+            background: linear-gradient(to bottom, #e2e8f0, #cbd5e1);
+            color: #0f172a;
+        }
+
+
+        .sidebar-btn.active {
+            background: linear-gradient(to bottom, #93c5fd, #3b82f6);
+            color: #ffffff;
+            font-weight: bold;
+            border-color: #2563eb;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        }
+
+
+        /* Content Boxes */
+        .info-box {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 2px;
+            padding: 10px 14px;
+        }
+
+
+        /* Table Styling */
+        .grade-table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+        }
+
+
+        .grade-table th {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+
+        .grade-table th.highlight-header {
+            background-color: #fef08a; /* Yellow column header */
+            border-color: #eab308;
+        }
+
+
+        .grade-table td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            font-size: 11px;
+            vertical-align: top;
+        }
+
+
+        .grade-table td.highlight-cell {
+            background-color: #fef9c3; /* Soft yellow grade highlighting */
+            text-align: center;
+            font-weight: normal;
+        }
+
+
+        .grade-table td.center-cell {
+            text-align: center;
+        }
+
+
+        .class-link {
+            color: #2563eb;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+
+        .class-link:hover {
+            text-decoration: underline;
+        }
+
+
+        .grade-link {
+            color: #2563eb;
+            font-style: italic;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+
+        .grade-link:hover {
+            text-decoration: underline;
+            color: #1d4ed8;
+        }
+
+
+        .teacher-text {
+            color: #475569;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+
+        .period-text {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+
+        /* Skyward Modal Dialog Styling */
+        .skyward-modal-header {
+            background: linear-gradient(to bottom, #dbeafe, #93c5fd);
+            border-bottom: 1px solid #60a5fa;
+        }
+
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+
+        .report-table th {
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            padding: 4px 6px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+
+        .report-table td {
+            border: 1px solid #cbd5e1;
+            padding: 4px 6px;
+        }
+
+
+        .report-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-[#f0f2f5] p-3 min-w-[1024px] relative min-h-screen">
+
+
+    <!-- TOP HEADER BAR -->
+    <header class="flex justify-between items-start mb-3 px-2">
+        <!-- Left Logo & Student Name -->
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-1">
+                <!-- Skyward Gradient Arch Icon -->
+                <svg class="w-12 h-10" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 65 C 20 20, 70 10, 90 25 C 60 15, 25 35, 10 65 Z" fill="url(#blueGrad)" />
+                    <path d="M5 70 C 25 30, 75 20, 95 35 C 65 25, 30 45, 5 70 Z" fill="#2563eb" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#1e3a8a" />
+                            <stop offset="100%" stop-color="#3b82f6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="leading-tight">
+                    <div class="skyward-sublogo">Student Access</div>
+                    <div class="skyward-logo-text">SKYWARD<sup>&reg;</sup></div>
+                </div>
+            </div>
+            <div class="pl-4 pt-3">
+                <span class="student-name-title">Jack Henry A. Greenberg</span>
+            </div>
+        </div>
+
+
+        <!-- Right User Navigation Links -->
+        <div class="text-right">
+            <div class="text-[11px] text-gray-600 mb-1">
+                <span class="font-semibold text-gray-700">Jack Henry Greenberg</span>
+                <span class="mx-1">|</span>
+                <a href="#" onclick="alert('Account Settings: Jack Henry A. Greenberg (ID: 1004829)')" class="top-nav-link">My Account</a>
+                <span class="mx-1">|</span>
+                <a href="#" onclick="alert('Contact District Support: support@ridgewood.k12.nj.us')" class="top-nav-link">Contact Us</a>
+                <span class="mx-1">|</span>
+                <a href="#" onclick="location.reload()" class="top-nav-link">Exit</a>
+            </div>
+            <div class="flex items-center justify-end space-x-3 text-[11px] mt-2">
+                <a href="#" class="flex items-center text-blue-700 hover:underline">
+                    <span class="bg-blue-800 text-white rounded p-[1px] text-[9px] mr-1 font-bold">▲</span>
+                    District Links
+                </a>
+                <a href="#" class="text-blue-700 hover:underline">RHS Website</a>
+                <a href="#" class="text-blue-700 hover:underline">District Family Resources</a>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- MAIN CONTAINER -->
+    <div class="flex space-x-3 items-start">
+        
+        <!-- LEFT SIDEBAR NAVIGATION -->
+        <nav class="w-44 flex-shrink-0 border border-slate-300 rounded shadow-sm overflow-hidden bg-slate-200">
+            <a href="#" class="sidebar-btn">Home</a>
+            <a href="#" class="sidebar-btn">Online Forms</a>
+            <a href="#" class="sidebar-btn">Calendar</a>
+            <a href="#" class="sidebar-btn active">Gradebook</a>
+            <a href="#" class="sidebar-btn">Attendance</a>
+            <a href="#" class="sidebar-btn">Student Info</a>
+            <a href="#" class="sidebar-btn">Busing</a>
+            <a href="#" class="sidebar-btn">Food Service</a>
+            <a href="#" class="sidebar-btn">Schedule</a>
+            <a href="#" class="sidebar-btn">Test Scores</a>
+            <a href="#" class="sidebar-btn">Fee Management</a>
+            <a href="#" class="sidebar-btn">Activities</a>
+            <a href="#" class="sidebar-btn">Academic History</a>
+            <a href="#" class="sidebar-btn">Portfolio</a>
+            <a href="#" class="sidebar-btn">Login History</a>
+        </nav>
+
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 bg-white p-4 border border-slate-300 rounded shadow-sm space-y-4">
+            
+            <!-- Page Heading -->
+            <div>
+                <h1 class="text-base font-bold text-gray-800 border-b pb-1 mb-2">Gradebook</h1>
+            </div>
+
+
+            <!-- School Notice Box 1 -->
+            <div class="info-box">
+                <div class="font-bold text-gray-800 text-[12px] mb-1">Ridgewood High School</div>
+                <p class="text-gray-600 text-[11px] leading-relaxed">
+                    Click on any blue MP grade to see Progress Report for that MP. While on Progress Report page click on a blue Comment bubble next to MP grade to read teacher comments. S1, S2, FIN show running totals for corresponding term grades. They will change in real time as teachers enter new assignment grades.
+                </p>
+            </div>
+
+
+            <!-- Missing Assignments Box 2 -->
+            <div class="info-box py-2 flex justify-between items-center">
+                <span class="text-gray-700 text-[11px]">There are no Missing Assignments.</span>
+                <span class="text-[10px] text-gray-400">Updated today at 4:00 PM</span>
+            </div>
+
+
+            <!-- Class Grades Section Header -->
+            <div class="flex justify-between items-end pt-2">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-sm font-bold text-gray-800">Class Grades</h2>
+                    <button title="Print Gradebook" onclick="window.print()" class="text-gray-500 hover:text-gray-700 text-xs flex items-center">
+                        🖨️
+                    </button>
+                </div>
+                <div class="text-[10px] text-gray-600 italic">
+                    Grades posted to the report card are in <strong>bold</strong>.<br>
+                    Current grades are <span class="bg-yellow-200 px-1">highlighted</span>.
+                </div>
+            </div>
+
+
+            <!-- Sub Navigation Header for Class Grades -->
+            <div class="flex justify-between items-center bg-slate-100 border border-slate-300 p-1 rounded-t text-[11px]">
+                <div class="font-semibold text-gray-700 pl-1">
+                    Jack Henry (Ridgewood High School)
+                </div>
+                <div>
+                    <a href="#" onclick="alert('Display Options: All Classes Selected')" class="text-blue-600 hover:underline">Display Options</a>
+                </div>
+            </div>
+
+
+            <!-- CLASS GRADES TABLE -->
+            <div class="overflow-x-auto">
+                <table class="grade-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left w-64">Class</th>
+                            <th class="highlight-header w-12">MP1</th>
+                            <th class="w-12">MP2</th>
+                            <th class="w-12">S1</th>
+                            <th class="w-12">MP3</th>
+                            <th class="w-12">MP4</th>
+                            <th class="w-12">S2</th>
+                            <th class="highlight-header w-12">FIN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Academic Skills -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('acad_skills')" class="class-link">Academic Skills</a>
+                                        <div class="period-text">Period 1</div>
+                                        <div class="teacher-text">Gilda Vasi</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('acad_skills')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('acad_skills')" class="grade-link">A</a></td>
+                        </tr>
+
+
+                        <!-- Row 2: Project Adventure I -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1 pl-3">
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('project_adv')" class="class-link">Project Adventure I</a>
+                                        <div class="period-text">Period 1</div>
+                                        <div class="teacher-text">Craig Bunzey</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"></td>
+                        </tr>
+
+
+                        <!-- Row 3: Health 9B -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1 pl-3">
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('health_9b')" class="class-link">Health 9B</a>
+                                        <div class="period-text">Period 1</div>
+                                        <div class="teacher-text">Kelsey Rehain</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"></td>
+                        </tr>
+
+
+                        <!-- Row 4: Geometry -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('geometry')" class="class-link">Geometry</a>
+                                        <div class="period-text">Period 2</div>
+                                        <div class="teacher-text">Gina Minichini</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('geometry')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"><a href="javascript:void(0)" onclick="openGradeModal('geometry')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('geometry')" class="grade-link">A</a></td>
+                        </tr>
+
+
+                        <!-- Row 5: Biology -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('biology')" class="class-link">Biology</a>
+                                        <div class="period-text">Period 3</div>
+                                        <div class="teacher-text">Michelle Coffey</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('biology')" class="grade-link">A-</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"><a href="javascript:void(0)" onclick="openGradeModal('biology')" class="grade-link">A-</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('biology')" class="grade-link">A-</a></td>
+                        </tr>
+
+
+                        <!-- Row 6: Symphonic Orchestra -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('orchestra')" class="class-link">Symphonic Orchestra</a>
+                                        <div class="period-text">Period 4</div>
+                                        <div class="teacher-text">Kristi Geronimo</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('orchestra')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"><a href="javascript:void(0)" onclick="openGradeModal('orchestra')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('orchestra')" class="grade-link">A</a></td>
+                        </tr>
+
+
+                        <!-- Row 7: English 9 -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('english9')" class="class-link">English 9</a>
+                                        <div class="period-text">Period 5</div>
+                                        <div class="teacher-text">Nari Darragh</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('english9')" class="grade-link">B</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"><a href="javascript:void(0)" onclick="openGradeModal('english9')" class="grade-link">B</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('english9')" class="grade-link">B</a></td>
+                        </tr>
+
+
+                        <!-- Row 8: Personal Fitness -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('fitness')" class="class-link">Personal Fitness</a>
+                                        <div class="period-text">Period 6</div>
+                                        <div class="teacher-text">Kelley Gallagher</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('fitness')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('fitness')" class="grade-link">A</a></td>
+                        </tr>
+
+
+                        <!-- Row 9: Health 9A -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1 pl-3">
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('health_9a')" class="class-link">Health 9A</a>
+                                        <div class="period-text">Period 6</div>
+                                        <div class="teacher-text">Lindsey Dalby</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"></td>
+                        </tr>
+
+
+                        <!-- Row 10: Music Production I -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1 pl-3">
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('music_prod')" class="class-link">Music Production I</a>
+                                        <div class="period-text">Period 8</div>
+                                        <div class="teacher-text">John Luckenbill</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"></td>
+                        </tr>
+
+
+                        <!-- Row 11: World History -->
+                        <tr>
+                            <td>
+                                <div class="flex items-start space-x-1">
+                                    <span class="text-gray-400 text-[9px] mt-[1px]">▶</span>
+                                    <div>
+                                        <a href="javascript:void(0)" onclick="openGradeModal('world_history')" class="class-link">World History</a>
+                                        <div class="period-text">Period 8</div>
+                                        <div class="teacher-text">Gilda Vasi</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('world_history')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"><a href="javascript:void(0)" onclick="openGradeModal('world_history')" class="grade-link">A</a></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="center-cell"></td>
+                            <td class="highlight-cell"><a href="javascript:void(0)" onclick="openGradeModal('world_history')" class="grade-link">A</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- MODAL OVERLAY -->
+    <div id="gradeModal" class="fixed inset-0 bg-black/40 backdrop-blur-none hidden z-50 flex items-center justify-center p-4">
+        <!-- Modal Content Container -->
+        <div class="bg-white rounded border border-slate-400 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="skyward-modal-header px-4 py-2 flex justify-between items-center select-none">
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-slate-800 text-xs" id="modalTitle">Progress Report MP1 - Course Details</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="window.print()" class="text-gray-700 hover:text-black text-xs font-bold px-1" title="Print Progress Report">
+                        🖨️ Print
+                    </button>
+                    <button onclick="closeGradeModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-2 py-0.5 rounded shadow">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Modal Scrollable Content -->
+            <div class="p-4 overflow-y-auto space-y-4 flex-1 bg-white" id="modalBody">
+                <!-- Content will be injected dynamically -->
+            </div>
+
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-100 border-t border-slate-300 px-4 py-2 text-right">
+                <button onclick="closeGradeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 border border-slate-400 font-semibold text-xs px-4 py-1 rounded">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Modal Data for all courses
+        const courseData = {
+            'acad_skills': {
+                title: 'Academic Skills - Period 1 (Gilda Vasi)',
+                score: '113.00%',
+                points: '360 out of 320',
+                grade: 'A',
+                categories: [
+                    { name: 'Assessments', weight: '25%', earned: 100, max: 100 },
+                    { name: 'Classwork', weight: '35%', earned: 160, max: 120 },
+                    { name: 'Habits of Work', weight: '20%', earned: 50, max: 50 },
+                    { name: 'Participation', weight: '10%', earned: 25, max: 25 },
+                    { name: 'Writer\'s Notebook', weight: '10%', earned: 25, max: 25 }
+                ],
+                assignments: [
+                    { date: '10/02/2026', title: 'Time Management Log/Reflection', cat: 'Assessments', score: '100 / 100', weight: '100%' },
+                    { date: '09/28/2026', title: 'Cell Phones / Mental Health Reflection', cat: 'Classwork', score: '50 / 40 (Bonus)', weight: '125%' },
+                    { date: '09/21/2026', title: 'TED Talk - Stress Management Notes', cat: 'Classwork', score: '50 / 40', weight: '125%' },
+                    { date: '09/14/2026', title: 'Letter to Your Teacher', cat: 'Classwork', score: '60 / 40', weight: '150%' },
+                    { date: '09/10/2026', title: 'Weekly Planner Check #1', cat: 'Habits of Work', score: '50 / 50', weight: '100%' }
+                ]
+            },
+            'geometry': {
+                title: 'Geometry - Period 2 (Gina Minichini)',
+                score: '100.00%',
+                points: '47 out of 47',
+                grade: 'A',
+                categories: [
+                    { name: 'Classwork', weight: '15%', earned: 10, max: 10 },
+                    { name: 'Homework', weight: '15%', earned: 37, max: 37 },
+                    { name: 'Assessments / Quizzes', weight: '70%', earned: 0, max: 0 }
+                ],
+                assignments: [
+                    { date: '09/29/2026', title: 'LinkIt! Part 1 Participation', cat: 'Classwork', score: '10 / 10', weight: '100%' },
+                    { date: '09/25/2026', title: 'Algebra Reference 19-21 Wkst', cat: 'Homework', score: '5 / 5', weight: '100%' },
+                    { date: '09/22/2026', title: 'Angle Relationships Worksheet', cat: 'Homework', score: '8 / 8', weight: '100%' },
+                    { date: '09/18/2026', title: 'Angle Addition Postulate Practice', cat: 'Homework', score: '8 / 8', weight: '100%' },
+                    { date: '09/15/2026', title: 'Classifying Angles Wkst', cat: 'Homework', score: '6 / 6', weight: '100%' },
+                    { date: '09/11/2026', title: '1.3 Midpoint and Distance Formulas', cat: 'Homework', score: '5 / 5', weight: '100%' },
+                    { date: '09/08/2026', title: '1.2 Segment and Midpoint Practice', cat: 'Homework', score: '5 / 5', weight: '100%' }
+                ]
+            },
+            'biology': {
+                title: 'Biology - Period 3 (Michelle Coffey)',
+                score: '91.00%',
+                points: '202 out of 220',
+                grade: 'A-',
+                categories: [
+                    { name: 'Assessments', weight: '60%', earned: 122, max: 140 },
+                    { name: 'Assignments', weight: '40%', earned: 80, max: 80 }
+                ],
+                assignments: [
+                    { date: '10/01/2026', title: 'Unit 1 Test - Homeostasis & Cells', cat: 'Assessments', score: '88 / 100', weight: '88%' },
+                    { date: '09/26/2026', title: 'Gizmo: Homeostasis Assessment', cat: 'Assessments', score: '10 / 10', weight: '100%' },
+                    { date: '09/20/2026', title: 'Scientific Method Quiz', cat: 'Assessments', score: '24 / 30', weight: '80%' },
+                    { date: '09/16/2026', title: 'Gizmo: Homeostasis Packet', cat: 'Assignments', score: '30 / 30', weight: '100%' },
+                    { date: '09/12/2026', title: 'EdPuzzle: Homeostasis Overview', cat: 'Assignments', score: '20 / 20', weight: '100%' },
+                    { date: '09/09/2026', title: 'Scientific Method Packet', cat: 'Assignments', score: '20 / 20', weight: '100%' },
+                    { date: '09/04/2026', title: 'Student Safety Acknowledgement Form', cat: 'Assignments', score: '10 / 10', weight: '100%' }
+                ]
+            },
+            'orchestra': {
+                title: 'Symphonic Orchestra - Period 4 (Kristi Geronimo)',
+                score: '100.00%',
+                points: '30 out of 30',
+                grade: 'A',
+                categories: [
+                    { name: 'Performance & Rehearsal Prep', weight: '100%', earned: 30, max: 30 }
+                ],
+                assignments: [
+                    { date: '09/30/2026', title: 'September Ensemble Rehearsal & Attendance', cat: 'Performance', score: '30 / 30', weight: '100%' }
+                ]
+            },
+            'english9': {
+                title: 'English 9 - Period 5 (Nari Darragh)',
+                score: '83.00%',
+                points: '61 out of 73',
+                grade: 'B',
+                hasPieChart: true,
+                categories: [
+                    { name: 'Assessments', weight: '40%', earned: 21, max: 25, color: '#3b82f6' },
+                    { name: 'Writing', weight: '30%', earned: 18, max: 23, color: '#10b981' },
+                    { name: 'Classwork', weight: '20%', earned: 12, max: 15, color: '#f59e0b' },
+                    { name: 'Homework', weight: '10%', earned: 10, max: 10, color: '#8b5cf6' }
+                ],
+                assignments: [
+                    { date: '09/29/2026', title: 'NRI Quiz: Parallel Construction', cat: 'Assessments', score: '21 / 25', weight: '84%' },
+                    { date: '09/24/2026', title: 'Writing Reflection Essay', cat: 'Writing', score: '10 / 13', weight: '76.9%' },
+                    { date: '09/21/2026', title: '"Hairs" - Short Vignette Writing', cat: 'Writing', score: '8 / 10', weight: '80%' },
+                    { date: '09/16/2026', title: 'Humboldt Park Image Analysis', cat: 'Classwork', score: '12 / 15', weight: '80%' },
+                    { date: '09/10/2026', title: 'Figurative Language Chart Check-In', cat: 'Homework', score: '5 / 5', weight: '100%' },
+                    { date: '09/05/2026', title: 'Signed Course Syllabus', cat: 'Homework', score: '5 / 5', weight: '100%' }
+                ]
+            },
+            'fitness': {
+                title: 'Personal Fitness - Period 6 (Kelley Gallagher)',
+                score: '94.00%',
+                points: '60 out of 64',
+                grade: 'A',
+                categories: [
+                    { name: 'Participation & Engagement', weight: '100%', earned: 60, max: 64 }
+                ],
+                assignments: [
+                    { date: '10/01/2026', title: '10.1 Daily Activity Log', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/30/2026', title: '9.30 Daily Workout & Warmup', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/28/2026', title: '9.28 Strength & Conditioning', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/25/2026', title: '9.25 Cardio Track Circuit', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/24/2026', title: '9.24 Daily Participation', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/22/2026', title: '9.22 Excused Absence', cat: 'Participation', score: 'EXC', weight: 'N/A' },
+                    { date: '09/17/2026', title: '9.17 Weightroom Orientation', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/16/2026', title: '9.15 Fitness Baseline Test', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/14/2026', title: '9.14 Warmup & Stretches', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/11/2026', title: '9.11 Outdoor Lap Run', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/09/2026', title: '9.9 Team Building Exercises', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/08/2026', title: '9.8 Locker Room & Expectations', cat: 'Participation', score: '5 / 5', weight: '100%' },
+                    { date: '09/04/2026', title: '9.4 First Day Physical Activity', cat: 'Participation', score: '5 / 5', weight: '100%' }
+                ]
+            },
+            'world_history': {
+                title: 'World History - Period 8 (Gilda Vasi)',
+                score: '100.00%',
+                points: '10 out of 10',
+                grade: 'A',
+                hasPieChart: true,
+                categories: [
+                    { name: 'Homework', weight: '100%', earned: 10, max: 10, color: '#3b82f6' }
+                ],
+                assignments: [
+                    { date: '09/25/2026', title: 'Family History Investigation Project', cat: 'Homework', score: '10 / 10', weight: '100%' }
+                ]
+            },
+            'project_adv': {
+                title: 'Project Adventure I - Period 1 (Craig Bunzey)',
+                score: 'N/A',
+                points: '0 out of 0',
+                grade: 'N/A',
+                categories: [{ name: 'Quarter 2 / Term 2 Course', weight: '100%', earned: 0, max: 0 }],
+                assignments: []
+            },
+            'health_9b': {
+                title: 'Health 9B - Period 1 (Kelsey Rehain)',
+                score: 'N/A',
+                points: '0 out of 0',
+                grade: 'N/A',
+                categories: [{ name: 'Quarter 3 / Term 3 Course', weight: '100%', earned: 0, max: 0 }],
+                assignments: []
+            },
+            'health_9a': {
+                title: 'Health 9A - Period 6 (Lindsey Dalby)',
+                score: 'N/A',
+                points: '0 out of 0',
+                grade: 'N/A',
+                categories: [{ name: 'Quarter 2 / Term 2 Course', weight: '100%', earned: 0, max: 0 }],
+                assignments: []
+            },
+            'music_prod': {
+                title: 'Music Production I - Period 8 (John Luckenbill)',
+                score: 'N/A',
+                points: '0 out of 0',
+                grade: 'N/A',
+                categories: [{ name: 'Quarter 4 / Term 4 Course', weight: '100%', earned: 0, max: 0 }],
+                assignments: []
+            }
+        };
+
+
+        function openGradeModal(courseKey) {
+            const data = courseData[courseKey];
+            if (!data) return;
+
+
+            document.getElementById('modalTitle').innerText = `Progress Report MP1 - ${data.title}`;
+            
+            let categoriesHtml = '';
+            data.categories.forEach(cat => {
+                categoriesHtml += `
+                    <tr>
+                        <td class="font-medium">${cat.name}</td>
+                        <td class="text-center">${cat.weight}</td>
+                        <td class="text-center">${cat.earned} / ${cat.max}</td>
+                    </tr>
+                `;
+            });
+
+
+            let assignmentsHtml = '';
+            if (data.assignments.length === 0) {
+                assignmentsHtml = `<tr><td colspan="5" class="text-center text-gray-500 py-4 italic">No assignments posted for this grading period yet.</td></tr>`;
+            } else {
+                data.assignments.forEach(a => {
+                    assignmentsHtml += `
+                        <tr>
+                            <td>${a.date}</td>
+                            <td class="font-semibold text-blue-800">${a.title}</td>
+                            <td>${a.cat}</td>
+                            <td class="text-center font-bold">${a.score}</td>
+                            <td class="text-center text-gray-600">${a.weight}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+
+            let pieChartSection = '';
+            if (data.hasPieChart) {
+                pieChartSection = `
+                    <div class="border border-slate-300 rounded p-3 bg-slate-50 flex flex-col md:flex-row items-center justify-around space-y-3 md:space-y-0">
+                        <div class="text-center md:text-left">
+                            <h4 class="font-bold text-slate-800 text-xs mb-1">Grade Category Breakdown</h4>
+                            <p class="text-[11px] text-gray-600">Visual weight distribution for current MP1 calculation.</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <!-- SVG Pie Chart -->
+                            <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 32 32">
+                                <circle r="16" cx="16" cy="16" fill="#3b82f6" />
+                                <circle r="8" cx="16" cy="16" fill="white" stroke="#3b82f6" stroke-width="16" stroke-dasharray="25 100" />
+                                <circle r="8" cx="16" cy="16" fill="white" stroke="#10b981" stroke-width="16" stroke-dasharray="19 100" stroke-dashoffset="-25" />
+                                <circle r="8" cx="16" cy="16" fill="white" stroke="#f59e0b" stroke-width="16" stroke-dasharray="12 100" stroke-dashoffset="-44" />
+                            </svg>
+                            <div class="text-[10px] space-y-1">
+                                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span><span>Assessments (40%)</span></div>
+                                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span><span>Writing (30%)</span></div>
+                                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span><span>Classwork (20%)</span></div>
+                                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span><span>Homework (10%)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+
+            const html = `
+                <!-- Summary Banner -->
+                <div class="bg-blue-50 border border-blue-200 p-3 rounded flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-blue-900 font-bold">${data.title}</div>
+                        <div class="text-[11px] text-blue-700">Student: Jack Henry Greenberg</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-extrabold text-blue-900">${data.score} (${data.grade})</div>
+                        <div class="text-[11px] text-blue-700">Total Points: <strong>${data.points}</strong></div>
+                    </div>
+                </div>
+
+
+                ${pieChartSection}
+
+
+                <!-- Category Summary Table -->
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs mb-1">Category Summary</h3>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-center">Weight</th>
+                                <th class="text-center">Points Earned / Max</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${categoriesHtml}
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Assignment Details Table -->
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs mb-1">Assignment Detail</h3>
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th class="w-24">Date</th>
+                                <th>Assignment Title</th>
+                                <th class="w-32">Category</th>
+                                <th class="w-24 text-center">Score</th>
+                                <th class="w-20 text-center">Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${assignmentsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('gradeModal').classList.remove('hidden');
+        }
+
+
+        function closeGradeModal() {
+            document.getElementById('gradeModal').classList.add('hidden');
+        }
+
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeGradeModal();
+            }
+        });
+    </script>
+</body>
+</html>
